@@ -37,6 +37,7 @@ constexpr const char* prompt = "Select an action or Q to quit";
 const char* promptline(const char* prompt) {
     static char buf[MAX_SMALL_STRING_LENGTH];
     printf("%s > ", prompt);
+    memset(buf, 0, MAX_SMALL_STRING_LENGTH);
     if (fgets(buf, MAX_SMALL_STRING_LENGTH, stdin) != NULL) {
         buf[strcspn(buf, "\n")] = '\0'; // trim CR/LF
     }
@@ -143,13 +144,19 @@ void do_list_by_title(SQLite& db) {
 }
 
 void do_add(SQLite& db) {
-    const char* first_name = nullptr;
-    const char* last_name = nullptr;
-    const char* title = nullptr;
+    const char* buf = nullptr;
+
+    char title[MAX_SMALL_STRING_LENGTH];
+    char first_name[MAX_SMALL_STRING_LENGTH];
+    char last_name[MAX_SMALL_STRING_LENGTH];
+
     puts("Add book:");
-    title = promptline("Title");
-    first_name = promptline("Author first name");
-    last_name = promptline("Author last name");
+    buf = promptline("Title");
+    strncpy_s(title, buf, strlen(buf) + 1);
+    buf = promptline("Author first name");
+    strncpy_s(first_name, buf, strlen(buf) + 1);
+    buf = promptline("Author last name");
+    strncpy_s(last_name, buf, strlen(buf) + 1);
     int rc = db.execute(sql_insert, title, first_name, last_name);
     if (!rc) {
         db.error_message("Could not add row");
