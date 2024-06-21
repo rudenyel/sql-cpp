@@ -1,7 +1,7 @@
 #include <cstdio>
+#include <string>
+#include "main.h"
 #include "sqlite3-wrapper.h"
-
-#define MAX_SMALL_STRING_LENGTH 255
 
 // db.value
 constexpr const char* sql_check_book_table = "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'books'";
@@ -162,11 +162,11 @@ void do_add(SQLite& db) {
 
     puts("Add book:");
     buf = promptline("Title");
-    strncpy_s(title, buf, strlen(buf) + 1);
+    strncpy(title, buf, strlen(buf) + 1);
     buf = promptline("Author first name");
-    strncpy_s(first_name, buf, strlen(buf) + 1);
+    strncpy(first_name, buf, strlen(buf) + 1);
     buf = promptline("Author last name");
-    strncpy_s(last_name, buf, strlen(buf) + 1);
+    strncpy(last_name, buf, strlen(buf) + 1);
     int rc = db.execute(sql_insert, title, first_name, last_name);
     if (!rc) {
         db.error_message("Could not add row");
