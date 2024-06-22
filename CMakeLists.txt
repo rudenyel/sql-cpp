@@ -3,8 +3,11 @@ project(sql_cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(sql_cpp main.cpp
-        sqlite3-wrapper.h
-        sqlite3-wrapper.cpp
-        main.h)
-target_link_libraries(sql_cpp LINK_PUBLIC sqlite3)
+add_executable(sql_cpp
+        main.h
+        main.cpp
+        wrapper.h
+        wrapper.cpp
+        sqlite3.h
+        sqlite3.c)
+#target_link_libraries(sql_cpp LINK_PUBLIC sqlite3)
