@@ -1,37 +1,37 @@
 #ifndef SQL_CPP_WRAPPER_H
 #define SQL_CPP_WRAPPER_H
 
+#include <string>
+#include <vector>
+#include <string_view>
 #include "sqlite3.h"
-#include <cstdlib>
+
+using namespace std;
 
 class SQLite {
-    const char * _filename = nullptr;
-    sqlite3 * _db = nullptr;
-    sqlite3_stmt * _stmt = nullptr;
-    int _column_count = 0;
-    const char ** _column_names = nullptr;
-    const char ** _row =  nullptr;
+    string filename;
+    sqlite3* connection = nullptr;
+    sqlite3_stmt* query = nullptr;
+    vector<string> names; // columns names
 
 public:
-    SQLite(const char * filename);
+    SQLite(string_view);
     ~SQLite();
-    void reset();
 
-    // sql methods
-    int select(const char * sql, ...);
-    const char** fetch_row();
-    const char** column_names();
-    int column_count();
+    void select(string_view, ...);
+    vector<string> get(); // get curent row
+    void show();
 
-    int execute(const char * sql, ...);
-    const char * value(const char * sql, ...);
+    // int execute(const char * sql, ...);
+    // const char * value(const char * sql, ...);
 
-    const char * filename();
-    void error_message(const char * str = nullptr);
+    string dbname() { return filename; }
+    void message(string_view) const;
 
 private:
-    int _prepare(const char * sql, va_list ap);
-    void _reset_stmt();
+    void disconnect();
+    void reset();
+    void prepare(string_view, va_list);
 };
 
 #endif

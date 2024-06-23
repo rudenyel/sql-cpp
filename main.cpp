@@ -8,10 +8,10 @@
 
 using namespace std;
 
-constexpr auto queryCheckBookTable =
+auto queryCheckBookTable =
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'books'";
 
-constexpr auto queryCreateTable =
+auto queryCreateTable =
     "CREATE TABLE IF NOT EXISTS books ("
     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
     "title VARCHAR(127) CHECK(title != ''),"
@@ -20,16 +20,16 @@ constexpr auto queryCreateTable =
     ")"
 ;
 
-constexpr auto queryBooks = "SELECT * FROM books";
-constexpr auto queryBooksSortByAuthor = "SELECT * FROM books ORDER BY last_name, title";
-constexpr auto queryBooksSortByTitle = "SELECT * FROM books ORDER BY title, last_name";
-constexpr auto queryBooksFindByAuthor = "SELECT * FROM books WHERE last_name LIKE ?";
-constexpr auto queryBooksFindByTitle = "SELECT * FROM books WHERE title LIKE ?";
-constexpr auto queryBookAdd = "INSERT INTO books (title, first_name, last_name) VALUES (?, ?, ?)";
-constexpr auto queryBookDelete = "DELETE FROM books WHERE id = ?";
-constexpr auto queryBooksDropTable = "DROP TABLE IF EXISTS books";
+auto queryBooks = "SELECT * FROM books";
+auto queryBooksSortByAuthor = "SELECT * FROM books ORDER BY last_name, title";
+auto queryBooksSortByTitle = "SELECT * FROM books ORDER BY title, last_name";
+auto queryBooksFindByAuthor = "SELECT * FROM books WHERE last_name LIKE ?";
+auto queryBooksFindByTitle = "SELECT * FROM books WHERE title LIKE ?";
+auto queryBookAdd = "INSERT INTO books (title, first_name, last_name) VALUES (?, ?, ?)";
+auto queryBookDelete = "DELETE FROM books WHERE id = ?";
+auto queryBooksDropTable = "DROP TABLE IF EXISTS books";
 
-constexpr const char* menu[] = {
+const char* menu[] = {
     "List books",
     "List books (sort by author)",
     "List books (sort by title)",
@@ -54,7 +54,7 @@ function<void(SQLite& db)> execute[] = {
 void TextMenu(SQLite& db) {
     while(true) {
         cout << endl;
-        cout << "Current database " << db.filename() << ":" << endl;
+        cout << "Current database " << db.dbname() << ":" << endl;
         int count = 0;
         for (const char* item : menu)
             cout << count++ << ": " << item << endl;
@@ -76,51 +76,38 @@ void TextMenu(SQLite& db) {
     }    
 }
 
-void DisplayData(SQLite& db) {
-    int rows = 0;
-    const int columns = db.column_count();
-    for (const char** row = db.fetch_row(); row; row = db.fetch_row()) {
-        for (int column = 0; column < columns; ++column)
-            cout << row[column] << ((column < columns - 1) ? "; " : "\n");
-        rows++;
-    }
-    if (rows == 0) cout << "Queryset is empty" << endl;
-}
-
 void Books(SQLite& db) {
     cout << "List books:" << endl;
     db.select(queryBooks);
-    DisplayData(db);
+    db.show();
 }
 
 void BooksSortByAuthor(SQLite& db) {
     cout << "List books (sort by author):" << endl;
     db.select(queryBooksSortByAuthor);
-    DisplayData(db);
+    db.show();
 }
 
 void BooksSortByTitle(SQLite& db) {
     cout << "List books (sort by title):" << endl;
     db.select(queryBooksSortByTitle);
-    DisplayData(db);
+    db.show();
 }
 
 void BooksFindByAuthor(SQLite& db) {
     string last_name;
     cout << "Find books by author last name > ";
     getline(cin, last_name);
-
-    db.select(queryBooksFindByAuthor, last_name.data());
-    DisplayData(db);
+    db.select(queryBooksFindByAuthor, last_name);
+    db.show();
 }
 
 void BooksFindByTitle(SQLite& db) {
     string title;
     cout << "Find books by title > ";
     getline(cin, title);
-
-    db.select(queryBooksFindByTitle, title.data());
-    DisplayData(db);
+    db.select(queryBooksFindByTitle, title);
+    db.show();
 }
 
 void BookAdd(SQLite& db) {
@@ -135,9 +122,9 @@ void BookAdd(SQLite& db) {
     cout << "Author last name > ";
     getline(cin, last_name);
 
-    if (!db.execute(queryBookAdd, title.data(), first_name.data(), last_name.data())) {
-        db.error_message("Could not add row");
-    }
+    // if (!db.execute(queryBookAdd, title.data(), first_name.data(), last_name.data())) {
+    //     db.message("Could not add row. ");
+    // }
 }
 
 void BookDelete(SQLite& db) {
@@ -145,16 +132,32 @@ void BookDelete(SQLite& db) {
     cout << "Delete book with id > ";
     getline(cin, id);
     
-    if (!db.execute(queryBookDelete, id.data()))
-        db.error_message("Could not delete row");
+    // if (!db.execute(queryBookDelete, id.data()))
+    //     db.message("Could not delete row. ");
 }
 
 void BooksDropTable(SQLite& db) {
-    db.execute(queryBooksDropTable);
-    exit(0);
+    // db.execute(queryBooksDropTable);
+    // exit(0);
 }
 
+// void test(const char* str) {
+//     cout << str << endl;
+// }
+//
+// void test(const string& str) {
+//     cout << str << endl;
+// }
+//
+// void test(const string_view str) {
+//     cout << str << endl;
+// }
+
 int main() {
+    // const char* cstr = "C-style string";
+    // string sstr = "String class";
+    // test(cstr);
+
     string filename;
     cout << "Create (or open if exists) database:" << endl;
     cout << "Database filename (default books.db) > ";
@@ -163,10 +166,10 @@ int main() {
         filename = "books.db";
     }
 
-    SQLite db(filename.data());
-    if (!db.value(queryCheckBookTable)) {
-        db.execute(queryCreateTable);
-    }
+    SQLite db("books.db");
+    // if (!db.value(queryCheckBookTable)) {
+    //     db.execute(queryCreateTable);
+    // }
 
     TextMenu(db);
 
