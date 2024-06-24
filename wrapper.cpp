@@ -35,7 +35,7 @@ void SQLite::reset() {
     names.clear();
 }
 
-void SQLite::prepare(string_view const sql, const va_list args) {
+void SQLite::prepare(string_view const sql, va_list args) {
     reset();
     if (sqlite3_prepare_v2(connection, sql.data(), -1, &query, nullptr)) {
         message("sqlite3_prepare_v2() function error");
@@ -44,15 +44,15 @@ void SQLite::prepare(string_view const sql, const va_list args) {
 
     int count = sqlite3_column_count(query);
     for (int i = 0; i < count; i++) {
-        string name(sqlite3_column_name(query, i));
+        string name = sqlite3_column_name(query, i);
         names.push_back(name);
     }
 
     count = sqlite3_bind_parameter_count(query);
     if (count) {
-        for(int i = 1; i <= count; i++) {
-            string_view parameter = va_arg(args, string_view);
-            sqlite3_bind_text(query, i, parameter.data(), -1, SQLITE_STATIC);
+        for (int i = 1; i <= count; i++) {
+            const char* parameter = va_arg(args, const char*);
+            sqlite3_bind_text(query, i, parameter, -1, SQLITE_STATIC);
         }
     }
 }
@@ -68,10 +68,11 @@ vector<string> SQLite::get() {
     vector<string> row;
     if (query) {
         if (sqlite3_step(query) == SQLITE_ROW) {
-            size_t const count = names.size();
+            size_t count = names.size();
             for (int i = 0; i < count; i++) {
-                auto const str = reinterpret_cast<const char*>(sqlite3_column_text(query, i));
-                string data(str);
+                // unsigned char* -> char*
+//                const char* str = reinterpret_cast<const char*>(sqlite3_column_text(query, i));
+                string data =  reinterpret_cast<const char*>(sqlite3_column_text(query, i));
                 row.push_back(data);
             }
         } else reset();
@@ -92,30 +93,28 @@ void SQLite::show() {
     if (rows == 0) cout << "Queryset is empty" << endl;
 }
 
-// int SQLite::execute(const char * sql, ...) {
-//     va_list ap;
-//     va_start(ap, sql);
-//     prepare(sql, ap);
-//     va_end(ap);
-//
-//     sqlite3_step(query);
-//     reset();
-//     return sqlite3_changes(connection);
-// }
-//
-// const char * SQLite::value(const char * sql, ...) {
-//     va_list ap;
-//     va_start(ap, sql);
-//     prepare(sql, ap);
-//     va_end(ap);
-//
-//     const char ** row = fetch_row();
-//     if (row) {
-//         return row[0];
-//     } else {
-//         return nullptr;
-//     }
-// }
+int SQLite::execute(string_view sql, ...) {
+    va_list args;
+    va_start(args, sql);
+    prepare(sql, args);
+    va_end(args);
+    sqlite3_step(query);
+    reset();
+    return sqlite3_changes(connection);
+}
+
+string SQLite::value(string_view sql, ...) {
+    va_list ap;
+    va_start(ap, sql);
+    prepare(sql, ap);
+    va_end(ap);
+
+    vector<string> row = get();
+    reset();
+    string str;
+    if (!row.empty()) str = row[0];
+    return str;
+}
 
 
 void SQLite::message(string_view const text) const {

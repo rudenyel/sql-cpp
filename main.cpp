@@ -98,7 +98,7 @@ void BooksFindByAuthor(SQLite& db) {
     string last_name;
     cout << "Find books by author last name > ";
     getline(cin, last_name);
-    db.select(queryBooksFindByAuthor, last_name);
+    db.select(queryBooksFindByAuthor, last_name.data());
     db.show();
 }
 
@@ -106,7 +106,7 @@ void BooksFindByTitle(SQLite& db) {
     string title;
     cout << "Find books by title > ";
     getline(cin, title);
-    db.select(queryBooksFindByTitle, title);
+    db.select(queryBooksFindByTitle, title.data());
     db.show();
 }
 
@@ -121,43 +121,24 @@ void BookAdd(SQLite& db) {
     getline(cin, first_name);
     cout << "Author last name > ";
     getline(cin, last_name);
-
-    // if (!db.execute(queryBookAdd, title.data(), first_name.data(), last_name.data())) {
-    //     db.message("Could not add row. ");
-    // }
+    if (!db.execute(queryBookAdd, title.data(), first_name.data(), last_name.data()))
+        db.message("Could not add row.");
 }
 
 void BookDelete(SQLite& db) {
     string id;
     cout << "Delete book with id > ";
     getline(cin, id);
-    
-    // if (!db.execute(queryBookDelete, id.data()))
-    //     db.message("Could not delete row. ");
+    if (!db.execute(queryBookDelete, id.data()))
+        db.message("Could not delete row.");
 }
 
 void BooksDropTable(SQLite& db) {
-    // db.execute(queryBooksDropTable);
-    // exit(0);
+     db.execute(queryBooksDropTable);
+     exit(0);
 }
 
-// void test(const char* str) {
-//     cout << str << endl;
-// }
-//
-// void test(const string& str) {
-//     cout << str << endl;
-// }
-//
-// void test(const string_view str) {
-//     cout << str << endl;
-// }
-
 int main() {
-    // const char* cstr = "C-style string";
-    // string sstr = "String class";
-    // test(cstr);
-
     string filename;
     cout << "Create (or open if exists) database:" << endl;
     cout << "Database filename (default books.db) > ";
@@ -166,10 +147,10 @@ int main() {
         filename = "books.db";
     }
 
-    SQLite db("books.db");
-    // if (!db.value(queryCheckBookTable)) {
-    //     db.execute(queryCreateTable);
-    // }
+    SQLite db(filename);
+     if (db.value(queryCheckBookTable).empty()) {
+         db.execute(queryCreateTable);
+     }
 
     TextMenu(db);
 

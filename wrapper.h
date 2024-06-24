@@ -9,29 +9,29 @@
 using namespace std;
 
 class SQLite {
+private:
     string filename;
     sqlite3* connection = nullptr;
     sqlite3_stmt* query = nullptr;
     vector<string> names; // columns names
+
+    void disconnect();
+    void reset();
+    void prepare(string_view, va_list);
 
 public:
     SQLite(string_view);
     ~SQLite();
 
     void select(string_view, ...);
-    vector<string> get(); // get curent row
+    vector<string> get(); // get row
     void show();
 
-    // int execute(const char * sql, ...);
-    // const char * value(const char * sql, ...);
+    int execute(string_view, ...);
+    string value(string_view, ...);
 
     string dbname() { return filename; }
     void message(string_view) const;
-
-private:
-    void disconnect();
-    void reset();
-    void prepare(string_view, va_list);
 };
 
 #endif
