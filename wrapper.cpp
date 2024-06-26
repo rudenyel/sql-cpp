@@ -104,11 +104,11 @@ int SQLite::execute(string_view sql, ...) {
 }
 
 string SQLite::value(string_view sql, ...) {
-    va_list ap;
-    va_start(ap, sql);
-    prepare(sql, ap);
-    va_end(ap);
+    va_list args;
+    va_start(args, sql);
+    prepare(sql, args);
 
+    va_end(args);
     vector<string> row = get();
     reset();
     string str;

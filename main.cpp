@@ -17,7 +17,6 @@ auto queryCreateTable =
     "title VARCHAR(127) CHECK(title != ''),"
     "first_name VARCHAR(127) CHECK(first_name != ''),"
     "last_name VARCHAR(127) CHECK(last_name != ''),"
-//    "year INTEGER DEFAULT (0)"
     ")"
 ;
 
